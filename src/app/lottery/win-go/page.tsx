@@ -4,6 +4,7 @@ import CasinoCoin from "@/components/CasioCoin";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import WalletCard from "@/components/WalletCard";
+import Timer from "@/components/Timer";
 import CircularTimer from "@/components/Timer";
 
 const getRandomResult = () => Math.floor(Math.random() * 10);
@@ -107,7 +108,7 @@ export default function WinGoPage() {
   }, [bets]);
 
   return (
-    <div className="flex flex-col items-center min-h-screen w-xl p-4 gap-6 bg-gradient-to-br bg-[#fff] text-black">
+    <div className="flex flex-col items-center min-h-screen w-xl p-4 gap-6 bg-gradient-to-br from-black via-[#1a002e] to-black text-white">
       {/* Header */}
       <div className="flex justify-between w-full items-center">
         <h1 className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg">
@@ -278,7 +279,7 @@ export default function WinGoPage() {
       {/* History */}
       <div className="bg-white/5 backdrop-blur-md rounded-lg w-full max-w-3xl overflow-hidden border border-white/10 mt-4">
         <table className="w-full text-sm text-center">
-          <thead className="bg-[#f95959] text-gray-300">
+          <thead className="bg-white/10 text-gray-300">
             <tr>
               <th className="px-2 py-2">Period</th>
               <th className="px-2 py-2">Number</th>
@@ -304,12 +305,12 @@ export default function WinGoPage() {
                 </td>
                 <td>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-bold text-black ${
+                    className={`px-2 py-1 rounded-full text-xs font-bold ${
                       h.color.includes("Red")
-                        ? "bg-red-500/40"
+                        ? "bg-red-500/20 text-red-300"
                         : h.color.includes("Green")
-                        ? "bg-green-500/40"
-                        : "bg-purple-500/40"
+                        ? "bg-green-500/20 text-green-300"
+                        : "bg-purple-500/20 text-purple-300"
                     }`}
                   >
                     {h.color}
