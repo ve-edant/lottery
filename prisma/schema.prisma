@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum transactiontype {
+  DEPOSIT
+  WITHDRAW
+  BET_PLACED
+  BET_WON
+  BET_LOST
+}
+
+enum betstatus {
+  PENDING
+  WON
+  LOST
+  CANCELLED
+}
+
+enum role {
+  USER
+  ADMIN
+}
+
+model user {
+  id           String         @id @default(cuid())
+  clerkid      String         @unique
+  email        String         @unique
+  username     String?
+  role         role           @default(USER)
+  createdat    DateTime       @default(now())
+  updatedat    DateTime       @updatedAt
+
+  wallet       wallet?
+  bets         bet[]
+  transactions transaction[]
+}
+
+model wallet {
+  id        String   @id @default(cuid())
+  balance   Int      @default(0) 
+  userid    String   @unique
+  user      user     @relation(fields: [userid], references: [id])
+}
+
+model game {
+  id        String       @id @default(cuid())
+  name      String
+  createdat DateTime     @default(now())
+  rounds    gameround[]
+}
+
+model gameround {
+  id        String    @id @default(cuid())
+  gameid    String
+  game      game      @relation(fields: [gameid], references: [id])
+  roundno   Int
+  mode      Int
+  starttime DateTime
+  endtime   DateTime
+  result    String?
+  bets      bet[]
+}
+
+model bet {
+  id        String     @id @default(cuid())
+  userid    String
+  roundid   String
+  choice    String
+  amount    Int
+  status    betstatus  @default(PENDING)
+  payout    Int?
+  createdat DateTime   @default(now())
+
+  user      user       @relation(fields: [userid], references: [id])
+  round     gameround  @relation(fields: [roundid], references: [id])
+}
+
+model transaction {
+  id           String           @id @default(cuid())
+  userid       String
+  type         transactiontype
+  amount       Int
+  balanceafter Int
+  createdat    DateTime @default(now())
+
+  user         user @relation(fields: [userid], references: [id])
+}

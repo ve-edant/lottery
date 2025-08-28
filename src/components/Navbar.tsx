@@ -1,10 +1,19 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const Navbar = () => {
-    const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
+  const router = useRouter();
 
   if (!isLoaded) {
     // 👇 Skeleton UI while loading
@@ -21,9 +30,7 @@ const Navbar = () => {
   return (
     <header className="bg-white flex justify-between items-center p-4 h-16 w-full">
       {/* Left: Logo */}
-      <div className="text-xl font-bold text-[#f95959]">
-        MyLogo
-      </div>
+      <div className="text-xl font-bold text-[#f95959]">MyLogo</div>
 
       {/* Right: Auth Buttons */}
       <div className="flex items-center gap-4">
@@ -41,16 +48,22 @@ const Navbar = () => {
         </SignedOut>
 
         <SignedIn>
-            <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                elements: {
-                    userButtonAvatarBox: "w-8 h-8 sm:w-10 sm:h-10",
-                    userButtonPopoverCard: "w-56",
-                    userButtonActionButton: "text-sm",
-                },
-                }}
-            />
+          <button
+            onClick={() => router.push("/admin")}
+            className="px-4 py-2 rounded-lg bg-red-600 cursor-pointer text-white hover:bg-red-700 transition"
+          >
+            Admin Panel
+          </button>
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                userButtonAvatarBox: "w-8 h-8 sm:w-10 sm:h-10",
+                userButtonPopoverCard: "w-56",
+                userButtonActionButton: "text-sm",
+              },
+            }}
+          />
         </SignedIn>
       </div>
     </header>

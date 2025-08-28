@@ -1,7 +1,7 @@
 import { FiRefreshCcw } from "react-icons/fi";
 import { FaWallet } from "react-icons/fa";
 
-export default function WalletCard() {
+export default function WalletCard({ wallet }: { wallet: number }) {
   return (
     <div className="w-full max-w-xl bg-gradient-to-br from-[#fef6e4] to-[#f7d9bd] rounded-3xl shadow-lg p-6 flex flex-col gap-4">
       {/* Top Row */}
@@ -17,7 +17,7 @@ export default function WalletCard() {
 
         {/* Right: Amount + Refresh */}
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-gray-900">₹ 0.00</span>
+          <span className="text-xl font-bold text-gray-900">{wallet}</span>
           <FiRefreshCcw className="text-gray-500 cursor-pointer hover:rotate-180 transition-transform duration-300" />
         </div>
       </div>
