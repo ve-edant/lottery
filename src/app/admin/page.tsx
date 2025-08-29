@@ -13,7 +13,7 @@ interface Wallet {
 }
 
 interface User {
-  id: string;
+  clerkid: string;
   username?: string | null;
   email?: string | null;
   wallet?: Wallet | null;
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
       if (result.error) throw new Error(result.error);
 
       toast.success("User deleted successfully");
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      setUsers((prev) => prev.filter((u) => u.clerkid !== userId));
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete user");
