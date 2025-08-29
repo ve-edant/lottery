@@ -32,3 +32,42 @@ body {
 .secondary-color {
   @apply bg-[#f95959];
 }
+
+.dashed-circle {
+  position: relative;
+  display: block;
+  margin: 10px auto;
+  width: 40px;
+  height: 40px;
+  border: 7px dashed white;
+  border-radius: 50%;
+  line-height: 10px;
+  text-align: center;
+  font-family: Helvetica;
+  color: white;
+}
+.dashed-circle:before {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: -8px;
+  border-radius: 50%;
+  background: red;
+  content: '';
+}
+.dashed-circle:after {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: 2px;
+  border: 1px dashed white;
+  border-radius: 50%;
+  background: rgba(255, 0, 0, 0.4);
+  content: '';
+}

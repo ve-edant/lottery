@@ -1,7 +1,9 @@
 import { FiRefreshCcw } from "react-icons/fi";
 import { FaWallet } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function WalletCard({ wallet }: { wallet: number }) {
+  const router = useRouter();
   return (
     <div className="w-full max-w-xl bg-gradient-to-br from-[#fef6e4] to-[#f7d9bd] rounded-3xl shadow-lg p-6 flex flex-col gap-4">
       {/* Top Row */}
@@ -24,10 +26,10 @@ export default function WalletCard({ wallet }: { wallet: number }) {
 
       {/* Bottom Row: Buttons */}
       <div className="flex gap-3 justify-end">
-        <button className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200">
+        <button onClick={()=>router.push("/transaction/withdrawal")} className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200">
           Withdraw
         </button>
-        <button className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200">
+        <button onClick={()=>router.push("/transaction/recharge")} className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200">
           Recharge
         </button>
       </div>

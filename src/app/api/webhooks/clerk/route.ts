@@ -72,24 +72,5 @@ export async function POST(req: Request) {
     }
   }
 
-  // -------------------
-  // User Deleted Event
-  // -------------------
-  if (type === "user.deleted") {
-    try {
-      console.log("🗑️ Deleting user from DB:", data.id);
-
-      // Delete the user, wallet and transactions are cascaded if you set Prisma cascade
-      await prisma.user.delete({
-        where: { clerkid: data.id },
-      });
-
-      console.log("✅ User deleted from DB successfully");
-    } catch (err) {
-      console.error("❌ Prisma delete failed:", err);
-      return NextResponse.json({ error: "DB delete error" }, { status: 500 });
-    }
-  }
-
   return NextResponse.json({ ok: true });
 }

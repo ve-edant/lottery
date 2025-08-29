@@ -4,8 +4,9 @@ import CasinoCoin from "@/components/CasioCoin";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import WalletCard from "@/components/WalletCard";
-import Timer from "@/components/Timer";
+import { FaClock } from "react-icons/fa";
 import CircularTimer from "@/components/Timer";
+import Chip from "@/components/Chip";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +22,71 @@ const getColor = (num: number) => {
 
 const getSize = (num: number) => (num >= 5 ? "Big" : "Small");
 
+const getNumbersForChoice = (choice: string): number[] => {
+  switch (choice.toLowerCase()) {
+    case "red":
+      return [0, 2, 4, 6, 8];
+    case "violet":
+      return [0, 5]; // 0 is Red/Violet, 5 is Violet/Green
+    case "green":
+      return [1, 3, 5, 7, 9]; // includes 5 for Violet/Green
+    case "big":
+      return [5, 6, 7, 8, 9];
+    case "small":
+      return [0, 1, 2, 3, 4];
+    default:
+      // If it's a number bet
+      const num = parseInt(choice);
+      return !isNaN(num) && num >= 0 && num <= 9 ? [num] : [];
+  }
+};
+
+const determineResultNumber = (bets: { choice: string; amount: number }[]): number => {
+  // Group bets by choice type
+  const colorBets = bets.filter(bet => ["red", "violet", "green"].includes(bet.choice.toLowerCase()));
+  const sizeBets = bets.filter(bet => ["big", "small"].includes(bet.choice.toLowerCase()));
+  const numberBets = bets.filter(bet => !isNaN(parseInt(bet.choice)));
+  
+  // Check for multiple bets in same group
+  const hasMultipleColorBets = colorBets.length > 1;
+  const hasMultipleSizeBets = sizeBets.length > 1;
+  const hasMultipleNumberBets = numberBets.length > 1;
+  
+  let targetChoice = null;
+  
+  // Priority: Number bets > Color bets > Size bets
+  if (hasMultipleNumberBets) {
+    // Find smallest number bet
+    targetChoice = numberBets.reduce((min, bet) => 
+      bet.amount < min.amount ? bet : min
+    ).choice;
+  } else if (hasMultipleColorBets) {
+    // Find smallest color bet
+    targetChoice = colorBets.reduce((min, bet) => 
+      bet.amount < min.amount ? bet : min
+    ).choice;
+  } else if (hasMultipleSizeBets) {
+    // Find smallest size bet
+    targetChoice = sizeBets.reduce((min, bet) => 
+      bet.amount < min.amount ? bet : min
+    ).choice;
+  }
+  
+  // If we have a target choice, get valid numbers for it
+  if (targetChoice) {
+    const validNumbers = getNumbersForChoice(targetChoice);
+    if (validNumbers.length > 0) {
+      return validNumbers[Math.floor(Math.random() * validNumbers.length)];
+    }
+  }
+  
+  // Default: random number
+  return getRandomResult();
+};
+
 export default function WinGoPage() {
   const [wallet, setWallet] = useState(1000);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(30);
   const [bets, setBets] = useState<{ choice: string; amount: number }[]>([]);
   const [result, setResult] = useState<{
     number: number;
@@ -34,7 +97,7 @@ export default function WinGoPage() {
   >([]);
   const [period, setPeriod] = useState(10001);
   const [showModal, setShowModal] = useState(false);
-  const [mode, setMode] = useState<number>(1);
+  const [mode, setMode] = useState<number>(0.5);
   const [modeLocked, setModeLocked] = useState(false);
 
   const [betModalOpen, setBetModalOpen] = useState(false);
@@ -42,6 +105,9 @@ export default function WinGoPage() {
   const [betAmount, setBetAmount] = useState(1);
   const [betQuantity, setBetQuantity] = useState(1);
   const [multiplier, setMultiplier] = useState(1);
+  const [number, setNumber] = useState(getRandomResult());
+  
+
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -53,20 +119,45 @@ export default function WinGoPage() {
   }, [timeLeft]);
 
   const handleRoundEnd = () => {
-    const number = getRandomResult();
-    const color = getColor(number);
-    const size = getSize(number);
+    // Use smart logic to determine result number
+    const resultNumber = determineResultNumber(bets);
+    setNumber(resultNumber);
+    
+    const color = getColor(resultNumber);
+    const size = getSize(resultNumber);
 
-    setResult({ number, color });
-    setHistory((h) => [{ period, number, color, size }, ...h.slice(0, 19)]);
+    setResult({ number: resultNumber, color });
+    setHistory((h) => [{ period, number: resultNumber, color, size }, ...h.slice(0, 19)]);
     setPeriod((p) => p + 1);
 
+    // Calculate winnings based on actual result
     bets.forEach((bet) => {
-      if (bet.amount < 500) {
-        // Small bet → win
-        setWallet((w) => w + bet.amount * 2);
-      } else {
-        // Big bet → lose, wallet already reduced when placing bet
+      let isWinner = false;
+      let winMultiplier = 1;
+      
+      // Check if bet wins based on actual result
+      if (bet.choice.toLowerCase() === "red" && [0, 2, 4, 6, 8].includes(resultNumber)) {
+        isWinner = true;
+        winMultiplier = 2;
+      } else if (bet.choice.toLowerCase() === "green" && [1, 3, 5, 7, 9].includes(resultNumber)) {
+        isWinner = true;
+        winMultiplier = 2;
+      } else if (bet.choice.toLowerCase() === "violet" && [0, 5].includes(resultNumber)) {
+        isWinner = true;
+        winMultiplier = 4.5;
+      } else if (bet.choice.toLowerCase() === "big" && resultNumber >= 5) {
+        isWinner = true;
+        winMultiplier = 2;
+      } else if (bet.choice.toLowerCase() === "small" && resultNumber <= 4) {
+        isWinner = true;
+        winMultiplier = 2;
+      } else if (bet.choice === resultNumber.toString()) {
+        isWinner = true;
+        winMultiplier = 9;
+      }
+      
+      if (isWinner) {
+        setWallet((w) => w + bet.amount * winMultiplier);
       }
     });
 
@@ -108,51 +199,86 @@ export default function WinGoPage() {
     }
   }, [bets]);
 
-  return (
-    <div className="flex flex-col items-center min-h-screen w-xl p-4 gap-6 bg-gradient-to-br from-black via-[#1a002e] to-black text-white">
-      {/* Header */}
-      <div className="flex justify-between w-full items-center">
-        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg">
-          🎰 Win-Go
-        </h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="text-sm text-cyan-300 hover:underline"
-        >
-          How to Play?
-        </button>
-      </div>
+  useEffect(() => {
+    if (mode == 0.5) {
+      setTimeLeft(30);
+    }  else if (mode == 1) {
+      setTimeLeft(600);
+    }else if (mode == 3) {
+      setTimeLeft(180);
+    } else if (mode == 5) {
+      setTimeLeft(300);
+    }
+    return () => {};
+  }, [mode]);
 
-      {/* Wallet */}
-      <div className="w-full max-w-sm">
+  return (
+    <div className="flex flex-col items-center min-h-screen w-xl gap-3 bg-[#fff] text-black">
+      {/* Header */}
+      <div className="flex flex-col bg-gradient-to-r from-[#f95959] to-[#ff988d] rounded-b-2xl p-4 justify-between w-full items-center">
         <WalletCard wallet={wallet} />
       </div>
+      <div className="flex gap-3 p-4 justify-center flex-wrap">
+        {[0.5, 1, 3, 5].map((m) => {
+          const isSelected = mode === m;
+          const isDisabled = modeLocked && !isSelected;
 
-      {/* Mode Selector */}
-      <div className="flex gap-2">
-        {[1, 3, 5, 10].map((m) => (
-          <button
-            key={m}
-            disabled={modeLocked && mode !== m}
-            onClick={() => setMode(m)}
-            className={`px-5 py-2 rounded-full text-sm font-semibold shadow-md transition-all ${
-              mode === m
-                ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black scale-105"
-                : "bg-white/10 text-gray-300 hover:bg-white/20"
-            } ${
-              modeLocked && mode !== m ? "opacity-40 cursor-not-allowed" : ""
-            }`}
-          >
-            {m}x
-          </button>
-        ))}
+          return (
+            <div
+              key={m}
+              onClick={() => !isDisabled && setMode(m)}
+              className={`relative flex flex-col items-center justify-center gap-2 p-4 w-24 rounded-2xl shadow-lg cursor-pointer transition-all
+          ${
+            isSelected
+              ? "bg-gradient-to-r from-[#f95959] to-[#ff988d] text-white scale-105"
+              : "bg-white/20 text-gray-400 hover:bg-white/30"
+          }
+          ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+        `}
+            >
+              {/* Optional Gray Overlay for non-selected disabled cards */}
+              {!isSelected && isDisabled && (
+                <div className="absolute inset-0 bg-gray-500/60 rounded-2xl pointer-events-none"></div>
+              )}
+
+              {/* Clock Icon */}
+              <FaClock
+                className={`text-2xl z-10 ${
+                  !isSelected ? "text-gray-400" : ""
+                }`}
+              />
+
+              {/* Title */}
+              <span
+                className={`font-bold text-sm z-10 ${
+                  !isSelected ? "text-gray-400" : ""
+                }`}
+              >
+                Win-Go
+              </span>
+
+              {/* Time */}
+              <span
+                className={`text-xs font-medium z-10 ${
+                  !isSelected ? "text-gray-400" : ""
+                }`}
+              >
+                {m < 1 ? "30 sec" : `${m} min`}
+              </span>
+            </div>
+          );
+        })}
       </div>
-
       {/* Circular Timer */}
-      <CircularTimer timeLeft={timeLeft} mode={mode} />
-
+      <div className="px-2">
+        <CircularTimer
+          timeLeft={timeLeft}
+          showModal={showModal}
+          setShowModal={setShowModal}
+        />
+      </div>
       {/* Betting Panel */}
-      <div className="flex flex-col items-center w-full gap-6 relative">
+      <div className="flex flex-col items-center w-full p-4 gap-6 relative">
         {/* Overlay when last 10s remain */}
         {timeLeft <= 10 && (
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-2xl z-20">
@@ -164,17 +290,17 @@ export default function WinGoPage() {
 
         <div className="grid grid-cols-3 gap-4 w-full max-w-lg relative z-10">
           {[
-            { label: "Red", color: "from-red-500 to-pink-600" },
-            { label: "Green", color: "from-green-500 to-emerald-600" },
-            { label: "Violet", color: "from-purple-500 to-pink-700" },
-          ].map(({ label, color }) => (
+            { label: "Green", color: "green-500" ,style:"rounded-tr-xl rounded-bl-xl"  },
+            { label: "Violet", color: "purple-600" ,style:"rounded-xl"  },
+            { label: "Red", color: "red-500" , style:"rounded-tl-xl rounded-br-xl" },
+          ].map(({ label, color, style }) => (
             <button
               key={label}
               onClick={() => handleBetClick(label)}
               disabled={timeLeft <= 10} // extra safeguard
-              className={`bg-gradient-to-r ${color} text-white py-4 rounded-lg w-full shadow-lg hover:scale-105 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`bg-${color} ${style} text-white bg-purple py-4 text-xl w-full shadow-lg hover:scale-105 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              Bet {label}
+              {label}
             </button>
           ))}
         </div>
@@ -208,38 +334,50 @@ export default function WinGoPage() {
               }`}
               onClick={() => handleBetClick(i.toString())}
             >
-              <CasinoCoin label={i} />
+              <Chip label={i} width={80} height={80} borderWidth={8} />
             </motion.div>
           ))}
         </div>
       </div>
-
       {/* Current Bets */}
       {bets.length > 0 && (
-        <div className="w-full max-w-md bg-gradient-to-br from-purple-900/40 to-cyan-900/40 backdrop-blur-lg rounded-2xl shadow-xl border border-cyan-400/20 p-5">
-          <h2 className="text-lg font-extrabold text-cyan-300 mb-3 tracking-wide">
-            🎲 Your Current Bets
+        <div className="w-full max-w-md bg-gradient-to-br from-[#1a1c2e]/90 to-[#0f172a]/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-cyan-400/30 p-8">
+          {/* Header */}
+          <h2 className="text-xl font-extrabold text-cyan-300 mb-5 tracking-wide flex items-center gap-2">
+            🎲 Current Bets
+            <span className="text-xs font-medium text-cyan-200/70">
+              ({bets.length})
+            </span>
           </h2>
-          <ul className="space-y-3">
+
+          {/* Bet List */}
+          <ul className="space-y-4">
             {bets.map((bet, idx) => (
               <motion.li
                 key={idx}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex justify-between items-center bg-white/10 hover:bg-white/20 transition rounded-xl px-4 py-3 text-sm"
+                transition={{ duration: 0.25, delay: idx * 0.05 }}
+                className="flex justify-between items-center bg-white/10 hover:bg-white/20 transition-all rounded-xl px-5 py-4 shadow-sm border border-white/10"
               >
-                <div>
-                  <span className="font-bold text-white">{bet.choice}</span>
-                  <span className="ml-2 text-yellow-300 font-semibold">
+                {/* Bet Info */}
+                <div className="flex flex-col">
+                  <span className="text-base font-semibold text-white">
+                    {bet.choice}
+                  </span>
+                  <span className="text-sm text-yellow-300 font-bold">
                     ₹{bet.amount}
                   </span>
                 </div>
+
+                {/* Cancel Button */}
                 <button
                   onClick={() => cancelBet(idx)}
                   disabled={timeLeft <= 0}
-                  className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-40"
+                  className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-300 transition disabled:opacity-40"
                 >
-                  ✖ Cancel
+                  <span className="text-lg">✖</span>
+                  Cancel
                 </button>
               </motion.li>
             ))}
@@ -276,11 +414,10 @@ export default function WinGoPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
       {/* History */}
-      <div className="bg-white/5 backdrop-blur-md rounded-lg w-full max-w-3xl overflow-hidden border border-white/10 mt-4">
+      <div className="p-4 bg-white/5 backdrop-blur-md rounded-lg w-full max-w-3xl overflow-hidden border border-white/10 mt-4">
         <table className="w-full text-sm text-center">
-          <thead className="bg-white/10 text-gray-300">
+          <thead className="bg-[#f95959] text-white">
             <tr>
               <th className="px-2 py-2">Period</th>
               <th className="px-2 py-2">Number</th>
@@ -290,15 +427,15 @@ export default function WinGoPage() {
           </thead>
           <tbody>
             {history.map((h, i) => (
-              <tr key={i} className="border-t border-white/10">
+              <tr key={i} className="border-t border-gray-500">
                 <td className="px-2 py-2">{h.period}</td>
                 <td className="px-2 py-2 font-bold">{h.number}</td>
                 <td>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-bold ${
                       h.size === "Big"
-                        ? "bg-blue-500/20 text-blue-300"
-                        : "bg-yellow-500/20 text-yellow-300"
+                        ? "bg-blue-500/20 text-blue-600"
+                        : "bg-yellow-500/20 text-yellow-600"
                     }`}
                   >
                     {h.size}
@@ -308,10 +445,10 @@ export default function WinGoPage() {
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-bold ${
                       h.color.includes("Red")
-                        ? "bg-red-500/20 text-red-300"
+                        ? "bg-red-500/20 text-red-600"
                         : h.color.includes("Green")
-                        ? "bg-green-500/20 text-green-300"
-                        : "bg-purple-500/20 text-purple-300"
+                        ? "bg-green-500/20 text-green-600"
+                        : "bg-purple-500/20 text-purple-600"
                     }`}
                   >
                     {h.color}
@@ -322,7 +459,6 @@ export default function WinGoPage() {
           </tbody>
         </table>
       </div>
-
       {/* Modal */}
       <AnimatePresence>
         {showModal && (
@@ -365,7 +501,6 @@ export default function WinGoPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
       <AnimatePresence>
         {betModalOpen && selectedChoice && (
           <motion.div
