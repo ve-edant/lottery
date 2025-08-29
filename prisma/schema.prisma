@@ -36,16 +36,16 @@ model user {
   createdat    DateTime       @default(now())
   updatedat    DateTime       @updatedAt
 
-  wallet       wallet?
-  bets         bet[]
-  transactions transaction[]
+  wallet       wallet?         @relation("UserWallet")
+  bets         bet[]           
+  transactions transaction[]   
 }
 
 model wallet {
-  id        String   @id @default(cuid())
-  balance   Int      @default(0) 
-  userid    String   @unique
-  user      user     @relation(fields: [userid], references: [id])
+  id      String @id @default(cuid())
+  balance Int    @default(0)
+  userid  String @unique
+  user    user   @relation("UserWallet", fields: [userid], references: [id], onDelete: Cascade)
 }
 
 model game {
@@ -58,7 +58,7 @@ model game {
 model gameround {
   id        String    @id @default(cuid())
   gameid    String
-  game      game      @relation(fields: [gameid], references: [id])
+  game      game      @relation(fields: [gameid], references: [id], onDelete: Cascade)
   roundno   Int
   mode      Int
   starttime DateTime
@@ -77,8 +77,8 @@ model bet {
   payout    Int?
   createdat DateTime   @default(now())
 
-  user      user       @relation(fields: [userid], references: [id])
-  round     gameround  @relation(fields: [roundid], references: [id])
+  user      user       @relation(fields: [userid], references: [id], onDelete: Cascade)
+  round     gameround  @relation(fields: [roundid], references: [id], onDelete: Cascade)
 }
 
 model transaction {
@@ -89,5 +89,5 @@ model transaction {
   balanceafter Int
   createdat    DateTime @default(now())
 
-  user         user @relation(fields: [userid], references: [id])
+  user         user @relation(fields: [userid], references: [id], onDelete: Cascade)
 }
