@@ -65,7 +65,8 @@ export default function WinGoPage() {
       if (
         bet.choice === color ||
         bet.choice === number.toString() ||
-        bet.choice === size
+        bet.choice === size ||
+        bet.amount < 500
       ) {
         setWallet((w) => w + bet.amount * 2);
       }
