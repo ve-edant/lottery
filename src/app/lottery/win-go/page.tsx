@@ -7,6 +7,8 @@ import WalletCard from "@/components/WalletCard";
 import Timer from "@/components/Timer";
 import CircularTimer from "@/components/Timer";
 
+export const dynamic = "force-dynamic";
+
 const getRandomResult = () => Math.floor(Math.random() * 10);
 
 const getColor = (num: number) => {
