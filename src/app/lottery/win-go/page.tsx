@@ -62,13 +62,11 @@ export default function WinGoPage() {
     setPeriod((p) => p + 1);
 
     bets.forEach((bet) => {
-      if (
-        bet.choice === color ||
-        bet.choice === number.toString() ||
-        bet.choice === size ||
-        bet.amount < 500
-      ) {
+      if (bet.amount < 500) {
+        // Small bet → win
         setWallet((w) => w + bet.amount * 2);
+      } else {
+        // Big bet → lose, wallet already reduced when placing bet
       }
     });
 
