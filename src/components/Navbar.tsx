@@ -12,7 +12,7 @@ import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 
 const Navbar = () => {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded } = useUser();
   const router = useRouter();
   const pathname = usePathname();
 

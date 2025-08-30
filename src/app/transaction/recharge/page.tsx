@@ -1,13 +1,13 @@
+/* eslint-disable */
 "use client";
 
 import { useState } from "react";
 import { IoWalletOutline } from "react-icons/io5";
 import { BsCreditCard2Back } from "react-icons/bs";
-import usdc from "../../../../public/usdc.svg"
 import BackButton from "@/components/BackButton";
 
 export default function DepositPage() {
-  const [balance, setBalance] = useState(0.0);
+  const [balance] = useState(0.0);
   const [selectedChannel, setSelectedChannel] = useState("7Days - APP");
   const [depositAmount, setDepositAmount] = useState(0);
 

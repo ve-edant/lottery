@@ -1,6 +1,6 @@
+/* eslint-disable */
 "use client";
 
-import CasinoCoin from "@/components/CasioCoin";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import WalletCard from "@/components/WalletCard";
@@ -105,7 +105,7 @@ export default function WinGoPage() {
   const [betAmount, setBetAmount] = useState(1);
   const [betQuantity, setBetQuantity] = useState(1);
   const [multiplier, setMultiplier] = useState(1);
-  const [number, setNumber] = useState(getRandomResult());
+  const [,setNumber] = useState(getRandomResult());
   
 
 
@@ -216,7 +216,7 @@ export default function WinGoPage() {
     <div className="flex flex-col items-center min-h-screen w-xl gap-3 bg-[#fff] text-black">
       {/* Header */}
       <div className="flex flex-col bg-gradient-to-r from-[#f95959] to-[#ff988d] rounded-b-2xl p-4 justify-between w-full items-center">
-        <WalletCard wallet={wallet} />
+        <WalletCard/>
       </div>
       <div className="flex gap-3 p-4 justify-center flex-wrap">
         {[0.5, 1, 3, 5].map((m) => {

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "../components/Navbar";
 import { ToastContainer } from "react-toastify";
+import { UserSync } from "@/components/UserSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,18 +27,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <ToastContainer />
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
-        >
-          <div className="max-w-xl mx-auto flex flex-col items-center">
-            <Navbar />
-            {children}
-          </div>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+      >
+        <ClerkProvider>
+          <ToastContainer />
+          <UserSync>
+            <div className="max-w-xl mx-auto flex flex-col items-center">
+              <Navbar />
+              {children}
+            </div>
+          </UserSync>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

@@ -9,7 +9,6 @@ interface TimerProps {
 }
 
 const Timer: React.FC<TimerProps> = ({
-  showModal,
   setShowModal,
   timeLeft = 19,
   numbers = [7, 0, 1, 3],
