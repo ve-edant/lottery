@@ -6,22 +6,14 @@ import { FaWallet } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-interface WalletCardProps {
-  initialBalance?: number;
-}
-
-export default function WalletCard({ initialBalance = 0 }: WalletCardProps) {
-  const [wallet, setWallet] = useState(initialBalance);
+export default function WalletCard() {
+  const [wallet, setWallet] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const router = useRouter();
 
-  // Set initial balance when prop changes
-  useEffect(() => {
-    setWallet(initialBalance);
-  }, [initialBalance]);
-
   // Function to fetch current balance
-  const fetchBalance = async () => {
+  const fetchBalance = async (showToast = false) => {
     setIsRefreshing(true);
     try {
       const response = await fetch('/api/user/wallet');
@@ -31,19 +23,30 @@ export default function WalletCard({ initialBalance = 0 }: WalletCardProps) {
       
       const data = await response.json();
       setWallet(data.balance);
-      toast.success('Balance updated!');
+      
+      if (showToast) {
+        toast.success('Balance updated!');
+      }
     } catch (error) {
       console.error('Error fetching balance:', error);
-      toast.error('Failed to refresh balance');
+      if (showToast) {
+        toast.error('Failed to refresh balance');
+      }
     } finally {
       setIsRefreshing(false);
+      setIsInitialLoading(false);
     }
   };
+
+  // Fetch balance on component mount
+  useEffect(() => {
+    fetchBalance(false); // Don't show toast on initial load
+  }, []);
 
   // Handle refresh button click
   const handleRefresh = () => {
     if (!isRefreshing) {
-      fetchBalance();
+      fetchBalance(true); // Show toast on manual refresh
     }
   };
 
@@ -61,30 +64,41 @@ export default function WalletCard({ initialBalance = 0 }: WalletCardProps) {
         </div>
         {/* Right: Amount + Refresh */}
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-gray-900">₹{wallet.toLocaleString()}</span>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className={`text-gray-500 cursor-pointer hover:text-gray-700 transition-all duration-300 ${
-              isRefreshing ? 'animate-spin' : 'hover:rotate-180'
-            } disabled:cursor-not-allowed`}
-            title="Refresh Balance"
-          >
-            <FiRefreshCcw className="text-xl" />
-          </button>
+          {isInitialLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-pulse bg-gray-300 h-6 w-16 rounded"></div>
+              <div className="animate-spin h-5 w-5 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+            </div>
+          ) : (
+            <>
+              <span className="text-xl font-bold text-gray-900">₹{wallet.toLocaleString()}</span>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className={`text-gray-500 cursor-pointer hover:text-gray-700 transition-all duration-300 ${
+                  isRefreshing ? 'animate-spin' : 'hover:rotate-180'
+                } disabled:cursor-not-allowed`}
+                title="Refresh Balance"
+              >
+                <FiRefreshCcw className="text-xl" />
+              </button>
+            </>
+          )}
         </div>
       </div>
       {/* Bottom Row: Buttons */}
       <div className="flex gap-3 justify-end">
         <button 
           onClick={() => router.push("/transaction/withdrawal")} 
-          className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200 hover:scale-105"
+          disabled={isInitialLoading}
+          className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Withdraw
         </button>
         <button 
           onClick={() => router.push("/transaction/recharge")} 
-          className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200 hover:scale-105"
+          disabled={isInitialLoading}
+          className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-5 rounded-full shadow transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Recharge
         </button>

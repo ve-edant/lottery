@@ -67,16 +67,6 @@ const Navbar = () => {
         </SignedOut>
 
         <SignedIn>
-          <button
-            onClick={() => router.push("/admin")}
-            className={`px-4 py-2 rounded-lg cursor-pointer transition ${
-              isLottery
-                ? "bg-white text-[#f95959] hover:bg-[#f95959] hover:text-white"
-                : "bg-red-600 text-white hover:bg-red-700"
-            }`}
-          >
-            Admin Panel
-          </button>
           <UserButton
             afterSignOutUrl="/"
             appearance={{
