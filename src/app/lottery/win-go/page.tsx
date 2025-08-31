@@ -8,6 +8,7 @@ import { FaClock } from "react-icons/fa";
 import CircularTimer from "@/components/Timer";
 import Chip from "@/components/Chip";
 import toast from "react-hot-toast";
+import ModeSelector from "@/components/ModeSelector";
 
 export const dynamic = "force-dynamic";
 
@@ -270,59 +271,9 @@ export default function WinGoPage() {
           onRefresh={handleRefresh}
         />
       </div>
-      <div className="flex gap-3 p-4 justify-center flex-wrap">
-        {[0.5, 1, 3, 5].map((m) => {
-          const isSelected = mode === m;
-          const isDisabled = modeLocked && !isSelected;
-
-          return (
-            <div
-              key={m}
-              onClick={() => !isDisabled && setMode(m)}
-              className={`relative flex flex-col items-center justify-center gap-2 p-2 md:p-4 w-20 md:w-24 rounded-2xl shadow-lg cursor-pointer transition-all
-          ${
-            isSelected
-              ? "bg-gradient-to-r from-[#f95959] to-[#ff988d] text-white scale-105"
-              : "bg-white/20 text-gray-400 hover:bg-white/30"
-          }
-          ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
-        `}
-            >
-              {/* Optional Gray Overlay for non-selected disabled cards */}
-              {!isSelected && isDisabled && (
-                <div className="absolute inset-0 bg-gray-500/60 rounded-2xl pointer-events-none"></div>
-              )}
-
-              {/* Clock Icon */}
-              <FaClock
-                className={`text-2xl z-10 ${
-                  !isSelected ? "text-gray-400" : ""
-                }`}
-              />
-
-              {/* Title */}
-              <span
-                className={`font-bold text-sm z-10 ${
-                  !isSelected ? "text-gray-400" : ""
-                }`}
-              >
-                Win-Go
-              </span>
-
-              {/* Time */}
-              <span
-                className={`text-xs font-medium z-10 ${
-                  !isSelected ? "text-gray-400" : ""
-                }`}
-              >
-                {m < 1 ? "30 sec" : `${m} min`}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      <ModeSelector mode={mode} setMode={setMode} modeLocked={modeLocked} />
       {/* Circular Timer */}
-      <div className="px-2">
+      <div className="px-2 w-full">
         <CircularTimer
           timeLeft={timeLeft}
           showModal={showModal}
@@ -394,7 +345,13 @@ export default function WinGoPage() {
               }`}
               onClick={() => handleBetClick(i.toString())}
             >
-              <Chip label={i} width={80} height={80} borderWidth={8} />
+              <Chip
+                label={i}
+                width={80}
+                height={80}
+                borderWidth={6}
+                className="w-12 h-12 sm:w-20 sm:h-20"
+              />
             </motion.div>
           ))}
         </div>
@@ -534,7 +491,9 @@ export default function WinGoPage() {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
             >
-              <h2 className="text-xl semi-bold mb-4 text-[#f95959]">The amount you deposit in your account must be fully invested.</h2>
+              <h2 className="text-xl semi-bold mb-4 text-[#f95959]">
+                The amount you deposit in your account must be fully invested.
+              </h2>
               <h2 className="text-xl font-bold mb-4 text-[#f95959]">
                 How to Play
               </h2>

@@ -5,6 +5,7 @@ interface ChipProps {
   width?: number; // px
   height?: number; // px
   borderWidth?: number;
+  className?: string; // Add className prop for responsive styling
 }
 
 const getColorsForLabel = (label: number | string) => {
@@ -55,16 +56,22 @@ const getColorsForLabel = (label: number | string) => {
 
 const Chip: React.FC<ChipProps> = ({
   label = "",
-  width = 100,
-  height = 100,
-  borderWidth = 8,
+  width = 80, // Reduced default size
+  height = 80,
+  borderWidth = 6, // Reduced default border
+  className = "",
 }) => {
   const { bgColor, borderColor, innerDashed, accentColor } = getColorsForLabel(label);
   
   return (
     <div
-      className="relative flex items-center justify-center rounded-full"
-      style={{ width, height }}
+      className={`relative flex items-center justify-center rounded-full flex-shrink-0 ${className}`}
+      style={{ 
+        width: `min(${width}px, 20vw)`, // Responsive width
+        height: `min(${height}px, 20vw)`, // Responsive height
+        minWidth: '30px', // Minimum size
+        minHeight: '30px'
+      }}
     >
       {/* Main chip body with gradient */}
       <div
@@ -87,11 +94,11 @@ const Chip: React.FC<ChipProps> = ({
       <div
         className="absolute rounded-full"
         style={{
-          top: borderWidth / 2,
-          left: borderWidth / 2,
-          right: borderWidth / 2,
-          bottom: borderWidth / 2,
-          borderWidth: borderWidth / 2,
+          top: `min(${borderWidth / 2}px, 1.5vw)`,
+          left: `min(${borderWidth / 2}px, 1.5vw)`,
+          right: `min(${borderWidth / 2}px, 1.5vw)`,
+          bottom: `min(${borderWidth / 2}px, 1.5vw)`,
+          borderWidth: `min(${borderWidth / 2}px, 1.5vw)`,
           borderColor: borderColor,
           borderStyle: "solid",
           background: `conic-gradient(from 0deg, ${borderColor}, ${accentColor}, ${borderColor})`
@@ -102,11 +109,11 @@ const Chip: React.FC<ChipProps> = ({
       <div
         className="absolute rounded-full"
         style={{
-          top: borderWidth,
-          left: borderWidth,
-          right: borderWidth,
-          bottom: borderWidth,
-          borderWidth: 2,
+          top: `min(${borderWidth}px, 3vw)`,
+          left: `min(${borderWidth}px, 3vw)`,
+          right: `min(${borderWidth}px, 3vw)`,
+          bottom: `min(${borderWidth}px, 3vw)`,
+          borderWidth: `min(2px, 0.5vw)`,
           borderColor: innerDashed,
           borderStyle: "dashed",
           backgroundColor: "rgba(255,255,255,0.1)",
@@ -125,14 +132,14 @@ const Chip: React.FC<ChipProps> = ({
         }}
       />
       
-      {/* Corner decorative elements */}
+      {/* Corner decorative elements - responsive sizes */}
       <div
         className="absolute rounded-full"
         style={{
-          top: borderWidth * 1.5,
-          left: borderWidth * 1.5,
-          width: 8,
-          height: 8,
+          top: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          left: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          width: `min(8px, 2vw)`,
+          height: `min(8px, 2vw)`,
           backgroundColor: innerDashed,
           boxShadow: `0 0 4px ${innerDashed}`
         }}
@@ -140,10 +147,10 @@ const Chip: React.FC<ChipProps> = ({
       <div
         className="absolute rounded-full"
         style={{
-          top: borderWidth * 1.5,
-          right: borderWidth * 1.5,
-          width: 8,
-          height: 8,
+          top: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          right: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          width: `min(8px, 2vw)`,
+          height: `min(8px, 2vw)`,
           backgroundColor: innerDashed,
           boxShadow: `0 0 4px ${innerDashed}`
         }}
@@ -151,10 +158,10 @@ const Chip: React.FC<ChipProps> = ({
       <div
         className="absolute rounded-full"
         style={{
-          bottom: borderWidth * 1.5,
-          left: borderWidth * 1.5,
-          width: 8,
-          height: 8,
+          bottom: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          left: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          width: `min(8px, 2vw)`,
+          height: `min(8px, 2vw)`,
           backgroundColor: innerDashed,
           boxShadow: `0 0 4px ${innerDashed}`
         }}
@@ -162,20 +169,20 @@ const Chip: React.FC<ChipProps> = ({
       <div
         className="absolute rounded-full"
         style={{
-          bottom: borderWidth * 1.5,
-          right: borderWidth * 1.5,
-          width: 8,
-          height: 8,
+          bottom: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          right: `min(${borderWidth * 1.5}px, 4.5vw)`,
+          width: `min(8px, 2vw)`,
+          height: `min(8px, 2vw)`,
           backgroundColor: innerDashed,
           boxShadow: `0 0 4px ${innerDashed}`
         }}
       />
       
-      {/* Label with enhanced styling */}
+      {/* Label with responsive font sizing */}
       <span 
         className="relative font-black text-white z-10"
         style={{
-          fontSize: Math.min(width, height) * 0.25,
+          fontSize: `clamp(12px, ${Math.min(width, height) * 0.25}px, 5vw)`,
           textShadow: `
             2px 2px 4px rgba(0,0,0,0.8),
             0 0 8px rgba(0,0,0,0.6),

@@ -33,7 +33,7 @@ export default function RootLayout({
       >
         <ClerkProvider>
           <UserSync>
-              <div className="max-w-xl mx-auto flex flex-col items-center">
+              <div className="max-w-xl mx-auto flex flex-col items-center overflow-hidden">
                 <Navbar />
                 {children}
                 <Toaster

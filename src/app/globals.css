@@ -25,6 +25,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@media (min-width: 475px) {
+  .xs\:w-7 {
+    width: 1.75rem;
+  }
+  .xs\:h-9 {
+    height: 2.25rem;
+  }
+  .xs\:w-9 {
+    width: 2.25rem;
+  }
+  .xs\:h-9 {
+    height: 2.25rem;
+  }
+}
+
 .primary-color{
   @apply bg-white;
 }
