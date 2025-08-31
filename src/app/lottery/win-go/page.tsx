@@ -534,6 +534,7 @@ export default function WinGoPage() {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
             >
+              <h2 className="text-xl semi-bold mb-4 text-[#f95959]">The amount you deposit in your account must be fully invested.</h2>
               <h2 className="text-xl font-bold mb-4 text-[#f95959]">
                 How to Play
               </h2>
