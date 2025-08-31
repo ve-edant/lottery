@@ -8,12 +8,11 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 const Navbar = () => {
   const { isLoaded } = useUser();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Check if the route starts with /lottery/

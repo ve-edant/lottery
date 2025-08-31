@@ -7,6 +7,7 @@ import WalletCard from "@/components/WalletCard";
 import { FaClock } from "react-icons/fa";
 import CircularTimer from "@/components/Timer";
 import Chip from "@/components/Chip";
+import toast from "react-hot-toast";
 
 export const dynamic = "force-dynamic";
 
@@ -41,37 +42,43 @@ const getNumbersForChoice = (choice: string): number[] => {
   }
 };
 
-const determineResultNumber = (bets: { choice: string; amount: number }[]): number => {
+const determineResultNumber = (
+  bets: { choice: string; amount: number }[]
+): number => {
   // Group bets by choice type
-  const colorBets = bets.filter(bet => ["red", "violet", "green"].includes(bet.choice.toLowerCase()));
-  const sizeBets = bets.filter(bet => ["big", "small"].includes(bet.choice.toLowerCase()));
-  const numberBets = bets.filter(bet => !isNaN(parseInt(bet.choice)));
-  
+  const colorBets = bets.filter((bet) =>
+    ["red", "violet", "green"].includes(bet.choice.toLowerCase())
+  );
+  const sizeBets = bets.filter((bet) =>
+    ["big", "small"].includes(bet.choice.toLowerCase())
+  );
+  const numberBets = bets.filter((bet) => !isNaN(parseInt(bet.choice)));
+
   // Check for multiple bets in same group
   const hasMultipleColorBets = colorBets.length > 1;
   const hasMultipleSizeBets = sizeBets.length > 1;
   const hasMultipleNumberBets = numberBets.length > 1;
-  
+
   let targetChoice = null;
-  
+
   // Priority: Number bets > Color bets > Size bets
   if (hasMultipleNumberBets) {
     // Find smallest number bet
-    targetChoice = numberBets.reduce((min, bet) => 
+    targetChoice = numberBets.reduce((min, bet) =>
       bet.amount < min.amount ? bet : min
     ).choice;
   } else if (hasMultipleColorBets) {
     // Find smallest color bet
-    targetChoice = colorBets.reduce((min, bet) => 
+    targetChoice = colorBets.reduce((min, bet) =>
       bet.amount < min.amount ? bet : min
     ).choice;
   } else if (hasMultipleSizeBets) {
     // Find smallest size bet
-    targetChoice = sizeBets.reduce((min, bet) => 
+    targetChoice = sizeBets.reduce((min, bet) =>
       bet.amount < min.amount ? bet : min
     ).choice;
   }
-  
+
   // If we have a target choice, get valid numbers for it
   if (targetChoice) {
     const validNumbers = getNumbersForChoice(targetChoice);
@@ -79,7 +86,7 @@ const determineResultNumber = (bets: { choice: string; amount: number }[]): numb
       return validNumbers[Math.floor(Math.random() * validNumbers.length)];
     }
   }
-  
+
   // Default: random number
   return getRandomResult();
 };
@@ -105,9 +112,37 @@ export default function WinGoPage() {
   const [betAmount, setBetAmount] = useState(1);
   const [betQuantity, setBetQuantity] = useState(1);
   const [multiplier, setMultiplier] = useState(1);
-  const [,setNumber] = useState(getRandomResult());
-  
+  const [, setNumber] = useState(getRandomResult());
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Function to fetch balance
+  const fetchBalance = async (showToast = false) => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch("/api/user/wallet");
+      if (!response.ok) throw new Error("Failed to fetch balance");
+      const data = await response.json();
+      setWallet(data.balance);
+      if (showToast) toast.success("Balance updated!");
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      if (showToast) toast.error("Failed to refresh balance");
+    } finally {
+      setIsRefreshing(false);
+      setIsInitialLoading(false);
+    }
+  };
+
+  // initial fetch
+  useEffect(() => {
+    fetchBalance(false);
+  }, []);
+
+  const handleRefresh = () => {
+    if (!isRefreshing) fetchBalance(true);
+  };
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -122,27 +157,39 @@ export default function WinGoPage() {
     // Use smart logic to determine result number
     const resultNumber = determineResultNumber(bets);
     setNumber(resultNumber);
-    
+
     const color = getColor(resultNumber);
     const size = getSize(resultNumber);
 
     setResult({ number: resultNumber, color });
-    setHistory((h) => [{ period, number: resultNumber, color, size }, ...h.slice(0, 19)]);
+    setHistory((h) => [
+      { period, number: resultNumber, color, size },
+      ...h.slice(0, 19),
+    ]);
     setPeriod((p) => p + 1);
 
     // Calculate winnings based on actual result
     bets.forEach((bet) => {
       let isWinner = false;
       let winMultiplier = 1;
-      
+
       // Check if bet wins based on actual result
-      if (bet.choice.toLowerCase() === "red" && [0, 2, 4, 6, 8].includes(resultNumber)) {
+      if (
+        bet.choice.toLowerCase() === "red" &&
+        [0, 2, 4, 6, 8].includes(resultNumber)
+      ) {
         isWinner = true;
         winMultiplier = 2;
-      } else if (bet.choice.toLowerCase() === "green" && [1, 3, 5, 7, 9].includes(resultNumber)) {
+      } else if (
+        bet.choice.toLowerCase() === "green" &&
+        [1, 3, 5, 7, 9].includes(resultNumber)
+      ) {
         isWinner = true;
         winMultiplier = 2;
-      } else if (bet.choice.toLowerCase() === "violet" && [0, 5].includes(resultNumber)) {
+      } else if (
+        bet.choice.toLowerCase() === "violet" &&
+        [0, 5].includes(resultNumber)
+      ) {
         isWinner = true;
         winMultiplier = 4.5;
       } else if (bet.choice.toLowerCase() === "big" && resultNumber >= 5) {
@@ -155,7 +202,7 @@ export default function WinGoPage() {
         isWinner = true;
         winMultiplier = 9;
       }
-      
+
       if (isWinner) {
         setWallet((w) => w + bet.amount * winMultiplier);
       }
@@ -202,9 +249,9 @@ export default function WinGoPage() {
   useEffect(() => {
     if (mode == 0.5) {
       setTimeLeft(30);
-    }  else if (mode == 1) {
+    } else if (mode == 1) {
       setTimeLeft(600);
-    }else if (mode == 3) {
+    } else if (mode == 3) {
       setTimeLeft(180);
     } else if (mode == 5) {
       setTimeLeft(300);
@@ -213,10 +260,15 @@ export default function WinGoPage() {
   }, [mode]);
 
   return (
-    <div className="flex flex-col items-center min-h-screen w-xl gap-3 bg-[#fff] text-black">
+    <div className="flex flex-col items-center min-h-screen w-full gap-3 bg-[#fff] text-black">
       {/* Header */}
       <div className="flex flex-col bg-gradient-to-r from-[#f95959] to-[#ff988d] rounded-b-2xl p-4 justify-between w-full items-center">
-        <WalletCard/>
+        <WalletCard
+          wallet={wallet}
+          isRefreshing={isRefreshing}
+          isInitialLoading={isInitialLoading}
+          onRefresh={handleRefresh}
+        />
       </div>
       <div className="flex gap-3 p-4 justify-center flex-wrap">
         {[0.5, 1, 3, 5].map((m) => {
@@ -227,7 +279,7 @@ export default function WinGoPage() {
             <div
               key={m}
               onClick={() => !isDisabled && setMode(m)}
-              className={`relative flex flex-col items-center justify-center gap-2 p-4 w-24 rounded-2xl shadow-lg cursor-pointer transition-all
+              className={`relative flex flex-col items-center justify-center gap-2 p-2 md:p-4 w-20 md:w-24 rounded-2xl shadow-lg cursor-pointer transition-all
           ${
             isSelected
               ? "bg-gradient-to-r from-[#f95959] to-[#ff988d] text-white scale-105"
@@ -290,9 +342,17 @@ export default function WinGoPage() {
 
         <div className="grid grid-cols-3 gap-4 w-full max-w-lg relative z-10">
           {[
-            { label: "Green", color: "green-500" ,style:"rounded-tr-xl rounded-bl-xl"  },
-            { label: "Violet", color: "purple-600" ,style:"rounded-xl"  },
-            { label: "Red", color: "red-500" , style:"rounded-tl-xl rounded-br-xl" },
+            {
+              label: "Green",
+              color: "green-500",
+              style: "rounded-tr-xl rounded-bl-xl",
+            },
+            { label: "Violet", color: "purple-600", style: "rounded-xl" },
+            {
+              label: "Red",
+              color: "red-500",
+              style: "rounded-tl-xl rounded-br-xl",
+            },
           ].map(({ label, color, style }) => (
             <button
               key={label}

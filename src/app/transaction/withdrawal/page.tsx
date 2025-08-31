@@ -12,7 +12,7 @@ export default function WalletPage() {
   const [withdrawAmount, setWithdrawAmount] = useState(0);
 
   return (
-    <div className="min-h-screen w-xl bg-gray-50 p-4 space-y-4">
+    <div className="min-h-screen w-full bg-gray-50 p-4 space-y-4">
       {/* Available Balance Card */}
       <div className="bg-gradient-to-r from-[#f95959] to-[#ff988d] text-white p-4 rounded-2xl shadow-md flex flex-col">
         <div className="flex justify-between items-center">
