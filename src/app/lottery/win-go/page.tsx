@@ -236,11 +236,11 @@ export default function WinGoPage() {
     setBetModalOpen(true);
   };
 
-  const cancelBet = (idx: number) => {
+  /* const cancelBet = (idx: number) => {
     setWallet((w) => w + bets[idx].amount);
     setBets((b) => b.filter((_, i) => i !== idx));
   };
-
+ */
   useEffect(() => {
     if (bets.length === 0) {
       setModeLocked(false);
@@ -386,16 +386,6 @@ export default function WinGoPage() {
                     ₹{bet.amount}
                   </span>
                 </div>
-
-                {/* Cancel Button */}
-                <button
-                  onClick={() => cancelBet(idx)}
-                  disabled={timeLeft <= 0}
-                  className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-300 transition disabled:opacity-40"
-                >
-                  <span className="text-lg">✖</span>
-                  Cancel
-                </button>
               </motion.li>
             ))}
           </ul>
