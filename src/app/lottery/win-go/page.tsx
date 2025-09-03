@@ -9,6 +9,7 @@ import CircularTimer from "@/components/Timer";
 import Chip from "@/components/Chip";
 import toast from "react-hot-toast";
 import ModeSelector from "@/components/ModeSelector";
+import { lotteryData } from "@/app/data/lotteryData500";
 
 export const dynamic = "force-dynamic";
 
@@ -93,8 +94,8 @@ const determineResultNumber = (
 };
 
 export default function WinGoPage() {
-  const [wallet, setWallet] = useState(1000);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [wallet, setWallet] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(3);
   const [bets, setBets] = useState<{ choice: string; amount: number }[]>([]);
   const [result, setResult] = useState<{
     number: number;
@@ -103,7 +104,36 @@ export default function WinGoPage() {
   const [history, setHistory] = useState<
     { period: number; number: number; color: string; size: string }[]
   >([]);
-  const [period, setPeriod] = useState(10001);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  useEffect(() => {
+  // Sort by period in descending order
+  const sortedData = [...lotteryData].sort((a, b) => b.period - a.period);
+  setHistory(sortedData);
+}, []);
+
+  const totalPages = Math.ceil(history.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = history.slice(startIndex, startIndex + itemsPerPage);
+    const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      // If few pages, show all
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
+
+  const [period, setPeriod] = useState(10635);
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState<number>(0.5);
   const [modeLocked, setModeLocked] = useState(false);
@@ -422,21 +452,23 @@ export default function WinGoPage() {
         )}
       </AnimatePresence>
       {/* History */}
-      <div className="p-4 bg-white/5 backdrop-blur-md rounded-lg w-full max-w-3xl overflow-hidden border border-white/10 mt-4">
+    <div className="flex flex-col w-full  items-center px-2">
+      {/* History Table */}
+      <div className=" bg-white/5 backdrop-blur-md rounded-xl w-full  overflow-hidden border border-white/10 shadow-md">
         <table className="w-full text-sm text-center">
           <thead className="bg-[#f95959] text-white">
             <tr>
-              <th className="px-2 py-2">Period</th>
-              <th className="px-2 py-2">Number</th>
-              <th className="px-2 py-2">Size</th>
-              <th className="px-2 py-2">Color</th>
+              <th className="px-3 py-2">Period</th>
+              <th className="px-3 py-2">Number</th>
+              <th className="px-3 py-2">Size</th>
+              <th className="px-3 py-2">Color</th>
             </tr>
           </thead>
           <tbody>
-            {history.map((h, i) => (
+            {currentItems.map((h, i) => (
               <tr key={i} className="border-t border-gray-500">
-                <td className="px-2 py-2">{h.period}</td>
-                <td className="px-2 py-2 font-bold">{h.number}</td>
+                <td className="px-3 py-2">{h.period}</td>
+                <td className="px-3 py-2 font-bold">{h.number}</td>
                 <td>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-bold ${
@@ -466,6 +498,47 @@ export default function WinGoPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-6 space-x-2">
+        <button
+          className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((p) => p - 1)}
+        >
+          Prev
+        </button>
+
+        {getPageNumbers().map((page, i) =>
+          page === "..." ? (
+            <span key={i} className="px-3 py-2">
+              ...
+            </span>
+          ) : (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(Number(page))}
+              className={`px-4 py-2 rounded-lg ${
+                currentPage === page
+                  ? "bg-[#f95959] text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              {page}
+            </button>
+          )
+        )}
+
+        <button
+          className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((p) => p + 1)}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
       {/* Modal */}
       <AnimatePresence>
         {showModal && (
