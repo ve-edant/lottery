@@ -107,7 +107,7 @@ export default function WinGoPage() {
   >([]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
   useEffect(() => {
     // Sort by period in descending order
     const sortedData = [...lotteryData].sort((a, b) => b.period - a.period);
