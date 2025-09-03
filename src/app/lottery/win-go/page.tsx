@@ -94,6 +94,7 @@ const determineResultNumber = (
 };
 
 export default function WinGoPage() {
+  const [firstLoad, setFirstLoad] = useState(true);
   const [wallet, setWallet] = useState(0);
   const [timeLeft, setTimeLeft] = useState(3);
   const [bets, setBets] = useState<{ choice: string; amount: number }[]>([]);
@@ -108,15 +109,15 @@ export default function WinGoPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   useEffect(() => {
-  // Sort by period in descending order
-  const sortedData = [...lotteryData].sort((a, b) => b.period - a.period);
-  setHistory(sortedData);
-}, []);
+    // Sort by period in descending order
+    const sortedData = [...lotteryData].sort((a, b) => b.period - a.period);
+    setHistory(sortedData);
+  }, []);
 
   const totalPages = Math.ceil(history.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = history.slice(startIndex, startIndex + itemsPerPage);
-    const getPageNumbers = () => {
+  const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= 7) {
       // If few pages, show all
@@ -125,9 +126,24 @@ export default function WinGoPage() {
       if (currentPage <= 3) {
         pages.push(1, 2, 3, 4, "...", totalPages);
       } else if (currentPage >= totalPages - 2) {
-        pages.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages.push(
+          1,
+          "...",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages
+        );
       } else {
-        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages
+        );
       }
     }
     return pages;
@@ -278,6 +294,10 @@ export default function WinGoPage() {
   }, [bets]);
 
   useEffect(() => {
+    if (firstLoad) {
+      setFirstLoad(false);
+      return;
+    }
     if (mode == 0.5) {
       setTimeLeft(30);
     } else if (mode == 1) {
@@ -452,92 +472,92 @@ export default function WinGoPage() {
         )}
       </AnimatePresence>
       {/* History */}
-    <div className="flex flex-col w-full  items-center px-2">
-      {/* History Table */}
-      <div className=" bg-white/5 backdrop-blur-md rounded-xl w-full  overflow-hidden border border-white/10 shadow-md">
-        <table className="w-full text-sm text-center">
-          <thead className="bg-[#f95959] text-white">
-            <tr>
-              <th className="px-3 py-2">Period</th>
-              <th className="px-3 py-2">Number</th>
-              <th className="px-3 py-2">Size</th>
-              <th className="px-3 py-2">Color</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((h, i) => (
-              <tr key={i} className="border-t border-gray-500">
-                <td className="px-3 py-2">{h.period}</td>
-                <td className="px-3 py-2 font-bold">{h.number}</td>
-                <td>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      h.size === "Big"
-                        ? "bg-blue-500/20 text-blue-600"
-                        : "bg-yellow-500/20 text-yellow-600"
-                    }`}
-                  >
-                    {h.size}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      h.color.includes("Red")
-                        ? "bg-red-500/20 text-red-600"
-                        : h.color.includes("Green")
-                        ? "bg-green-500/20 text-green-600"
-                        : "bg-purple-500/20 text-purple-600"
-                    }`}
-                  >
-                    {h.color}
-                  </span>
-                </td>
+      <div className="flex flex-col w-full  items-center px-2">
+        {/* History Table */}
+        <div className=" bg-white/5 backdrop-blur-md rounded-xl w-full  overflow-hidden border border-white/10 shadow-md">
+          <table className="w-full text-sm text-center">
+            <thead className="bg-[#f95959] text-white">
+              <tr>
+                <th className="px-3 py-2">Period</th>
+                <th className="px-3 py-2">Number</th>
+                <th className="px-3 py-2">Size</th>
+                <th className="px-3 py-2">Color</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentItems.map((h, i) => (
+                <tr key={i} className="border-t border-gray-500">
+                  <td className="px-3 py-2">{h.period}</td>
+                  <td className="px-3 py-2 font-bold">{h.number}</td>
+                  <td>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        h.size === "Big"
+                          ? "bg-blue-500/20 text-blue-600"
+                          : "bg-yellow-500/20 text-yellow-600"
+                      }`}
+                    >
+                      {h.size}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        h.color.includes("Red")
+                          ? "bg-red-500/20 text-red-600"
+                          : h.color.includes("Green")
+                          ? "bg-green-500/20 text-green-600"
+                          : "bg-purple-500/20 text-purple-600"
+                      }`}
+                    >
+                      {h.color}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-center mt-6 space-x-2">
+          <button
+            className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Prev
+          </button>
+
+          {getPageNumbers().map((page, i) =>
+            page === "..." ? (
+              <span key={i} className="px-3 py-2">
+                ...
+              </span>
+            ) : (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(Number(page))}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === page
+                    ? "bg-[#f95959] text-white"
+                    : "bg-gray-200"
+                }`}
+              >
+                {page}
+              </button>
+            )
+          )}
+
+          <button
+            className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
       </div>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-center mt-6 space-x-2">
-        <button
-          className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((p) => p - 1)}
-        >
-          Prev
-        </button>
-
-        {getPageNumbers().map((page, i) =>
-          page === "..." ? (
-            <span key={i} className="px-3 py-2">
-              ...
-            </span>
-          ) : (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(Number(page))}
-              className={`px-4 py-2 rounded-lg ${
-                currentPage === page
-                  ? "bg-[#f95959] text-white"
-                  : "bg-gray-200"
-              }`}
-            >
-              {page}
-            </button>
-          )
-        )}
-
-        <button
-          className="px-4 py-2 rounded-lg bg-gray-200 disabled:opacity-50"
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((p) => p + 1)}
-        >
-          Next
-        </button>
-      </div>
-    </div>
 
       {/* Modal */}
       <AnimatePresence>
